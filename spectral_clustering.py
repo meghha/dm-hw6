@@ -303,7 +303,7 @@ def spectral_clustering():
     ax_ari.set_ylabel('Feature 2')
     fig_ari.colorbar(plot_ARI)  # Show color scale
     
-    plt.savefig('Clusters with largest ARI')
+    # plt.savefig('Clusters with largest ARI')
     plt.close(fig_ari)
 
     answers["cluster scatterplot with largest ARI"] = plot_ARI
@@ -315,7 +315,7 @@ def spectral_clustering():
     ax_sse.set_ylabel('Feature 2')
     fig_sse.colorbar(plot_SSE)  # Show color scale
     
-    plt.savefig('Clusters with smallest SSE')
+    # plt.savefig('Clusters with smallest SSE')
     
 
     answers["cluster scatterplot with smallest SSE"] = plot_SSE
@@ -330,7 +330,7 @@ def spectral_clustering():
     ax_eig.set_ylabel("Eigenvalue")
     ax_eig.grid(True)
     
-    plt.savefig('Sorted Eigen Values plot')
+    # plt.savefig('Sorted Eigen Values plot')
     
     answers["eigenvalue plot"] = plot_eig[0]
 
