@@ -169,10 +169,15 @@ def spectral_clustering():
     sigmaMaxARI = 0
     sigmaMinSSE = 0
 
-    sigma = np.linspace(0.1, 10, 10)
+    a = 0.1
+    b = 10
+
+    sigma = np.linspace(a,b,b)
     k = 5
-    data = np.load('question1_cluster_data.npy')[:5000]
-    labels = np.load('question1_cluster_labels.npy')[:5000]
+
+    max_idx = 5000
+    data = np.load('question1_cluster_data.npy')[:max_idx]
+    labels = np.load('question1_cluster_labels.npy')[:max_idx]
 
     params_dict = {}
     for i in range(len(sigma)):
