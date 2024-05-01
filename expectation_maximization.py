@@ -2,10 +2,17 @@ import pickle
 import numpy as np
 import matplotlib.pyplot as plt
 from numpy.typing import NDArray
-from sklearn.metrics import confusion_matrix
+from typing import Tuple,Optional
+# from sklearn.metrics import confusion_matrix
 
 # ----------------------------------------------------------------------
-
+def confusion_matrix(true_labels, predicted_labels):
+    unique_labels = np.unique(np.concatenate((true_labels, predicted_labels)))
+    num_classes = len(unique_labels)
+    cm = np.zeros((num_classes, num_classes))
+    for true, pred in zip(true_labels, predicted_labels):
+        cm[true, pred] += 1
+    return cm
 
 def compute_SSE(data, labels):
     """
