@@ -2,7 +2,8 @@ import pickle
 import numpy as np
 import matplotlib.pyplot as plt
 from numpy.typing import NDArray
-# from typing import Tuple,Optional
+from typing import Tuple,Optional
+from typing import Union
 # from sklearn.metrics import confusion_matrix
 
 # ----------------------------------------------------------------------
@@ -184,13 +185,11 @@ def extract_samples(
 # ----------------------------------------------------------------------
 
 
-def em_algorithm(data: NDArray[np.floating], max_iter: int = 100) -> tuple[
-    NDArray[np.floating] | None,
-    NDArray[np.floating] | None,
-    NDArray[np.floating] | None,
-    NDArray[np.floating] | None,
-    NDArray[np.floating] | None,
-]:
+def em_algorithm(data: NDArray[np.floating], max_iter: int = 100) -> Tuple[Union[NDArray[np.floating], None], 
+                                                                         Union[NDArray[np.floating], None], 
+                                                                         Union[NDArray[np.floating], None], 
+                                                                         Union[NDArray[np.floating], None], 
+                                                                         Union[NDArray[np.floating], None]]:
     """
     Arguments:
     - data: numpy array of shape 50,000 x 2
