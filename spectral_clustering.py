@@ -10,42 +10,63 @@ import pickle
 from scipy.linalg import eigh
 from scipy.cluster.vq import kmeans2
 from typing import Tuple,Optional
+from scipy.special import comb
 
 ######################################################################
 #####     CHECK THE PARAMETERS     ########
 ######################################################################
 
-
-def proximity_measure(x, y, sigma):
-    squared_distance = np.sum((x - y) ** 2)
-    return np.exp(-squared_distance / (2 * sigma ** 2))
-
-def adjusted_rand_index(true_labels, pred_labels):
+def gaussian_kernel_similarity(x,y, sigma):
     """
-    Compute the adjusted Rand index.
+    Compute the similarity matrix using the Gaussian kernel.
 
-    Arguments:
-    - true_labels: true labels of the data
-    - pred_labels: predicted labels by the clustering algorithm
+    Parameters:
+    - data: numpy array or matrix, where each row represents a data point
+    - sigma: float, bandwidth parameter for the Gaussian kernel
 
-    Return value:
-    - Adjusted Rand index
+    Returns:
+    - similarity_matrix: numpy array, similarity matrix representing the graph
     """
-    contingency_matrix = np.zeros((np.max(true_labels) + 1, np.max(pred_labels) + 1), dtype=np.int64)
-    for i in range(len(true_labels)):
-        contingency_matrix[true_labels[i], pred_labels[i]] += 1
 
-    a = np.sum(contingency_matrix, axis=1)
-    b = np.sum(contingency_matrix, axis=0)
-    n = np.sum(contingency_matrix)
+    # Compute pairwise squared Euclidean distances
+    pairwise_distances_sq = np.sum(x - y) ** 2
 
-    ab_plus_2 = np.sum(a * (a - 1)) / 2
-    cd_plus_2 = np.sum(b * (b - 1)) / 2
+    # Compute similarity matrix using Gaussian kernel formula
+    similarity_matrix = np.exp(-pairwise_distances_sq / (2 * sigma**2))
 
-    ad_bc = np.sum(contingency_matrix * (contingency_matrix - 1)) / 2
-    expected_index = ab_plus_2 * cd_plus_2 / n / (n - 1) + ad_bc ** 2 / n / (n - 1)
-    max_index = (ab_plus_2 + cd_plus_2) / 2
-    return (ad_bc - expected_index) / (max_index - expected_index)
+    return similarity_matrix
+
+
+def adjusted_rand_index(labels_true, labels_pred):
+    """
+    Compute the Adjusted Rand Index (ARI) to measure the similarity between two clusterings.
+
+    Parameters:
+    - labels_true: numpy array, true cluster labels
+    - labels_pred: numpy array, predicted cluster labels
+
+    Returns:
+    - ari: float, Adjusted Rand Index score
+    """
+    n = len(labels_true)
+    
+    # Compute the contingency matrix
+    contingency_matrix = np.zeros((np.max(labels_true) + 1, np.max(labels_pred) + 1), dtype=int)
+    for i in range(n):
+        contingency_matrix[labels_true[i], labels_pred[i]] += 1
+
+    # Compute the marginal sums of the contingency matrix
+    a = contingency_matrix.sum(axis=1)  # Sum of rows
+    b = contingency_matrix.sum(axis=0)  # Sum of columns
+    c = comb(contingency_matrix, 2).sum()  # Sum of all elements squared
+
+    # Compute the adjusted Rand index
+    index = np.sum(comb(contingency_matrix, 2)) - (np.sum(comb(a, 2)) * np.sum(comb(b, 2))) / comb(n, 2)
+    expected_index = (np.sum(comb(a, 2)) * np.sum(comb(b, 2))) / comb(n, 2)
+    max_index = (np.sum(comb(a, 2)) + np.sum(comb(b, 2))) / 2
+    ari = (index - expected_index) / (max_index - expected_index)
+
+    return ari
 
 def computeSSE(data, labels):
     sse = 0.0
@@ -94,7 +115,7 @@ def spectral(
     similarity_matrix = np.zeros((n_samples, n_samples))
     for i in range(n_samples):
         for j in range(n_samples):
-            similarity_matrix[i, j] = proximity_measure(data[i], data[j], sigma)
+            similarity_matrix[i, j] = gaussian_kernel_similarity(data[i], data[j], sigma)
 
     # Laplacian matrix
     degree_matrix = np.diag(np.sum(similarity_matrix, axis=1))
@@ -103,7 +124,7 @@ def spectral(
     # Compute eigenvectors and eigenvalues
     eigenvalues, eigenvectors = eigh(laplacian_matrix)
 
-    # KMEANS clustering
+    # KMEANS++ clustering
     _, computed_labels = kmeans2(eigenvectors[:, 1:k], k, minit='++')
 
     # SSE
@@ -204,6 +225,7 @@ def spectral_clustering():
     # The best paramaeters from hyperparameter study are considered
     
     for i in [0,1,2,3,4]:
+        
         data_slice = cluster_data[i * 1000: (i + 1) * 1000]
         labels_slice = cluster_labels[i * 1000: (i + 1) * 1000]
         computed_labels, sse, ari, eig_values = spectral(data_slice, labels_slice, {'sigma': best_sigma, 'k': best_k})
